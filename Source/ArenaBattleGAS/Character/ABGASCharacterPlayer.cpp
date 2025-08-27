@@ -9,6 +9,11 @@
 AABGASCharacterPlayer::AABGASCharacterPlayer()
 {
 	ASC = nullptr;
+	static ConstructorHelpers::FObjectFinder<UAnimMontage> ComboActionMontageRef(TEXT("/Script/Engine.AnimMontage'/Game/ArenaBattleGAS/Animation/AM_ComboAttack.AM_ComboAttack'"));
+	if (ComboActionMontageRef.Object)
+	{
+		ComboActionMontage = ComboActionMontageRef.Object;
+	}
 }
 
 UAbilitySystemComponent* AABGASCharacterPlayer::GetAbilitySystemComponent() const
@@ -25,15 +30,23 @@ void AABGASCharacterPlayer::PossessedBy(AController* NewController)
 		ASC = GASPS->GetAbilitySystemComponent();
 		ASC->InitAbilityActorInfo(GASPS, this);
 
-		int32 InputId = 0;
 		for (const auto& StartAbility : StartAbilities)
 		{
 			FGameplayAbilitySpec StartSpec(StartAbility);
-			StartSpec.InputID = InputId++;
+			ASC->GiveAbility(StartSpec);
+		}
+		
+		for (const auto& StartInputAbility : StartInputAbilities)
+		{
+			FGameplayAbilitySpec StartSpec(StartInputAbility.Value);
+			StartSpec.InputID = StartInputAbility.Key;
 			ASC->GiveAbility(StartSpec);
 
-			SetupGASInputComponent();
 		}
+		SetupGASInputComponent();
+
+		APlayerController* PlayerController = CastChecked<APlayerController>(NewController);
+		PlayerController->ConsoleCommand(TEXT("showdebug abilitysystem"));
 	}
 }
 
@@ -50,6 +63,7 @@ void AABGASCharacterPlayer::SetupGASInputComponent()
 		UEnhancedInputComponent* EnhancedInputComponent = CastChecked<UEnhancedInputComponent>(InputComponent);
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Triggered, this, &AABGASCharacterPlayer::GASInputPressed,0);
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &AABGASCharacterPlayer::GASInputReleased,0);
+		EnhancedInputComponent->BindAction(AttackAction, ETriggerEvent::Triggered, this, &AABGASCharacterPlayer::GASInputPressed,1);
 	}
 }
 
