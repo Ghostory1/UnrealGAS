@@ -7,6 +7,7 @@
 namespace ABGameplayTags
 {
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Actor_Action_Rotate);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Actor_Action_AttackHitCheck);
 
 	
 

@@ -6,6 +6,7 @@
 namespace ABGameplayTags
 {
 	UE_DEFINE_GAMEPLAY_TAG(Actor_Action_Rotate, "Actor.Action.Rotate");
+	UE_DEFINE_GAMEPLAY_TAG(Actor_Action_AttackHitCheck, "Actor.Action.AttackHitCheck");
 
 	UE_DEFINE_GAMEPLAY_TAG(Actor_State_IsRotating, "Actor.State.IsRotating");
 	UE_DEFINE_GAMEPLAY_TAG(Actor_State_IsAttacking, "Actor.State.IsAttacking");

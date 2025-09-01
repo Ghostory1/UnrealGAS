@@ -4,17 +4,21 @@
 #include "GA/AT/ABAT_JumpAndWaitForLanding.h"
 #include "ABAT_JumpAndWaitForLanding.h"
 #include "GameFramework/Character.h"
+#include "ABAT_Trace.h"
 
 UABAT_JumpAndWaitForLanding::UABAT_JumpAndWaitForLanding()
 {
 
 }
 
+
+
 UABAT_JumpAndWaitForLanding* UABAT_JumpAndWaitForLanding::CreateTask(UGameplayAbility* OwningAbility)
 {
 	UABAT_JumpAndWaitForLanding* NewTask = NewAbilityTask<UABAT_JumpAndWaitForLanding>(OwningAbility);
 	return NewTask;
 }
+
 
 void UABAT_JumpAndWaitForLanding::Activate()
 {
