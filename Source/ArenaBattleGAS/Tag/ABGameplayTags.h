@@ -14,4 +14,7 @@ namespace ABGameplayTags
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Actor_State_IsRotating);
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Actor_State_IsAttacking);
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Actor_State_IsJumping);
+
+	//GE GameplayTag
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Data_Damage);
 }

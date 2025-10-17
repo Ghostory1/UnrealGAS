@@ -9,6 +9,7 @@
 #include "GA/TA/ABTA_Trace.h"
 #include "Attribute/ABCharacterAttributeSet.h"
 #include "ArenaBattleGAS.h"
+#include "Tag/ABGameplayTags.h"
 
 UABGA_AttackHitCheck::UABGA_AttackHitCheck()
 {
@@ -18,6 +19,7 @@ UABGA_AttackHitCheck::UABGA_AttackHitCheck()
 void UABGA_AttackHitCheck::ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData)
 {
 	Super::ActivateAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);
+	CurrentLevel = TriggerEventData->EventMagnitude;
 	UABAT_Trace* AttackTraceTask = UABAT_Trace::CreateTask(this, AABTA_Trace::StaticClass());
 	AttackTraceTask->OnComplete.AddDynamic(this, &UABGA_AttackHitCheck::OnTraceResultCallback);
 	AttackTraceTask->ReadyForActivation();
@@ -32,25 +34,32 @@ void UABGA_AttackHitCheck::OnTraceResultCallback(const FGameplayAbilityTargetDat
 		ABGAS_LOG(LogABGAS, Log, TEXT("Target %s Detected"),*(HitResult.GetActor()->GetName()));
 
 		UAbilitySystemComponent* SourceASC = GetAbilitySystemComponentFromActorInfo_Checked();
-		UAbilitySystemComponent* TargetASC = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(HitResult.GetActor());
-		if (!SourceASC || !TargetASC)
-		{
-			ABGAS_LOG(LogABGAS, Error, TEXT("SourceASC , TargetASC Not Founded !!"));
-			return;
-		}
-		//SourceAttribute 에서 값을 읽고
-		//TargetAttribute의 값을 변경해야하니 const를 제거 해줘야함 -> const_cast
-		//하지만 좋은 방법은 아님 const_cast 보다는 다음에 게임플레이 이펙트를 통해 바꿔주는것이 좋음
+		//UAbilitySystemComponent* TargetASC = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(HitResult.GetActor());
+		//if (!SourceASC || !TargetASC)
+		//{
+		//	ABGAS_LOG(LogABGAS, Error, TEXT("SourceASC , TargetASC Not Founded !!"));
+		//	return;
+		//}
+		////SourceAttribute 에서 값을 읽고
+		////TargetAttribute의 값을 변경해야하니 const를 제거 해줘야함 -> const_cast
+		////하지만 좋은 방법은 아님 const_cast 보다는 다음에 게임플레이 이펙트를 통해 바꿔주는것이 좋음
 		const UABCharacterAttributeSet* SourceAttribute = SourceASC->GetSet<UABCharacterAttributeSet>();
-		UABCharacterAttributeSet* TargetAttribute = const_cast<UABCharacterAttributeSet*>(TargetASC->GetSet<UABCharacterAttributeSet>());
-		if (!SourceAttribute || !TargetAttribute)
-		{
-			ABGAS_LOG(LogABGAS, Error, TEXT("SourceAttribute , TargetAttribute Not Founded !!"));
-			return;
-		}
+		//UABCharacterAttributeSet* TargetAttribute = const_cast<UABCharacterAttributeSet*>(TargetASC->GetSet<UABCharacterAttributeSet>());
+		//if (!SourceAttribute || !TargetAttribute)
+		//{
+		//	ABGAS_LOG(LogABGAS, Error, TEXT("SourceAttribute , TargetAttribute Not Founded !!"));
+		//	return;
+		//}
 
-		const float AttackDamage = SourceAttribute->GetAttackRate();
-		TargetAttribute->SetHealth(TargetAttribute->GetHealth() - AttackDamage);
+		//const float AttackDamage = SourceAttribute->GetAttackRate();
+		//TargetAttribute->SetHealth(TargetAttribute->GetHealth() - AttackDamage);
+
+		FGameplayEffectSpecHandle EffectSpecHandle = MakeOutgoingGameplayEffectSpec(AttackDamageEffect,CurrentLevel);
+		if (EffectSpecHandle.IsValid())
+		{
+			EffectSpecHandle.Data->SetSetByCallerMagnitude(ABGameplayTags::Data_Damage, -(SourceAttribute->GetAttackRate()));
+			ApplyGameplayEffectSpecToTarget(CurrentSpecHandle,CurrentActorInfo,CurrentActivationInfo,EffectSpecHandle,TargetDataHandle);
+		}
 	}
 	bool bReplicatiedEndAbility = true;
 	bool bWasCancelled = false;
