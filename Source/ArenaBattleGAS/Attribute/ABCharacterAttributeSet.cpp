@@ -4,6 +4,7 @@
 #include "Attribute/ABCharacterAttributeSet.h"
 #include "ArenaBattleGAS.h"
 #include "GameplayEffectExtension.h"
+#include "Tag/ABGameplayTags.h"
 UABCharacterAttributeSet::UABCharacterAttributeSet() :
 	AttackRange(100.0f),
 	MaxAttackRange(300.0f),
@@ -51,6 +52,14 @@ void UABCharacterAttributeSet::PostGameplayEffectExecute(const FGameplayEffectMo
 		SetHealth(FMath::Clamp(GetHealth() - GetDamage(), MinimumHealth, GetMaxHealth()));
 		SetDamage(0.0f);
 	}
+
+	if ((GetHealth() <= 0.0f) && !bOutOfHealth == false)
+	{
+		Data.Target.AddLooseGameplayTag(ABGameplayTags::Actor_State_IsDead);
+		OnOutOfHealth.Broadcast();
+	}
+
+	bOutOfHealth = (GetHealth() <= 0.0f);
 }
 
 //void UABCharacterAttributeSet::PostAttributeChange(const FGameplayAttribute& Attribute, float OldValue, float NewValue)
