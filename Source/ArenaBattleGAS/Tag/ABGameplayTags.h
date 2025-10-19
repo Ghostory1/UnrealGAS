@@ -11,6 +11,7 @@ namespace ABGameplayTags
 
 	
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Actor_State_IsDead);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Actor_State_IsInvinsible);
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Actor_State_IsRotating);
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Actor_State_IsAttacking);
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Actor_State_IsJumping);

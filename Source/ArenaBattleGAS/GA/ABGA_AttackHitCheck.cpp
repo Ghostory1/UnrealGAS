@@ -57,8 +57,16 @@ void UABGA_AttackHitCheck::OnTraceResultCallback(const FGameplayAbilityTargetDat
 		FGameplayEffectSpecHandle EffectSpecHandle = MakeOutgoingGameplayEffectSpec(AttackDamageEffect,CurrentLevel);
 		if (EffectSpecHandle.IsValid())
 		{
-			EffectSpecHandle.Data->SetSetByCallerMagnitude(ABGameplayTags::Data_Damage, -(SourceAttribute->GetAttackRate()));
+			//Set-by-Caller 방식
+			//EffectSpecHandle.Data->SetSetByCallerMagnitude(ABGameplayTags::Data_Damage, -(SourceAttribute->GetAttackRate()));
 			ApplyGameplayEffectSpecToTarget(CurrentSpecHandle,CurrentActorInfo,CurrentActivationInfo,EffectSpecHandle,TargetDataHandle);
+		}
+
+		FGameplayEffectSpecHandle BuffEffectSpecHandle = MakeOutgoingGameplayEffectSpec(AttackBuffEffect);
+		if (BuffEffectSpecHandle.IsValid())
+		{
+			// 자기 자신에게 버프를 거는거기때문에 마지막인자에 타겟정보는 안넣어도 됌
+			ApplyGameplayEffectSpecToOwner(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, BuffEffectSpecHandle);
 		}
 	}
 	bool bReplicatiedEndAbility = true;

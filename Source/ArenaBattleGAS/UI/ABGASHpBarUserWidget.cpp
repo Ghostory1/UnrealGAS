@@ -6,6 +6,7 @@
 #include "Attribute/ABCharacterAttributeSet.h"
 #include "Components/ProgressBar.h"
 #include "Components/TextBlock.h"
+#include "Tag/ABGameplayTags.h"
 void UABGASHpBarUserWidget::SetAbilitySystemComponent(AActor* InOwner)
 {
 	Super::SetAbilitySystemComponent(InOwner);
@@ -16,7 +17,10 @@ void UABGASHpBarUserWidget::SetAbilitySystemComponent(AActor* InOwner)
 	{
 		ASC->GetGameplayAttributeValueChangeDelegate(UABCharacterAttributeSet::GetHealthAttribute()).AddUObject(this, &UABGASHpBarUserWidget::OnHealthChanged);
 		ASC->GetGameplayAttributeValueChangeDelegate(UABCharacterAttributeSet::GetMaxHealthAttribute()).AddUObject(this, &UABGASHpBarUserWidget::OnMaxHealthChanged);
-	
+		
+		ASC->RegisterGameplayTagEvent(ABGameplayTags::Actor_State_IsInvinsible,EGameplayTagEventType::NewOrRemoved).AddUObject(this,&ThisClass::OnInvinsibleTagChanged);
+		PbHpBar->SetFillColorAndOpacity(HealthColor);
+
 		const UABCharacterAttributeSet* CurrentAttributeSet = ASC->GetSet<UABCharacterAttributeSet>();
 		if (CurrentAttributeSet)
 		{
@@ -41,6 +45,21 @@ void UABGASHpBarUserWidget::OnMaxHealthChanged(const FOnAttributeChangeData& Cha
 {
 	CurrentMaxHealth = ChangeData.NewValue;
 	UpdateHpBar();
+}
+
+void UABGASHpBarUserWidget::OnInvinsibleTagChanged(const FGameplayTag CallbackTag, int32 NewCount)
+{
+	//같이 부착된 태그도 같이 들어와서 나중에 Count를 보고 떼졌는지 확인 가능
+	if (NewCount > 0)
+	{
+		PbHpBar->SetFillColorAndOpacity(InvinsibleColor);
+		PbHpBar->SetPercent(1.0f);
+	}
+	else
+	{
+		PbHpBar->SetFillColorAndOpacity(HealthColor);
+		UpdateHpBar();
+	}
 }
 
 void UABGASHpBarUserWidget::UpdateHpBar()

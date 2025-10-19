@@ -31,10 +31,27 @@ void UABCharacterAttributeSet::PreAttributeChange(const FGameplayAttribute& Attr
 	}
 }
 
-//bool UABCharacterAttributeSet::PreGameplayEffectExecute(FGameplayEffectModCallbackData& Data)
-//{
-//	return false;
-//}
+bool UABCharacterAttributeSet::PreGameplayEffectExecute(FGameplayEffectModCallbackData& Data)
+{
+	if (!Super::PreGameplayEffectExecute(Data))
+	{
+		return false;
+	}
+
+	if (Data.EvaluatedData.Attribute == GetDamageAttribute())
+	{
+		if (Data.EvaluatedData.Magnitude > 0.0f)
+		{
+			if (Data.Target.HasMatchingGameplayTag(ABGameplayTags::Actor_State_IsInvinsible))
+			{
+				Data.EvaluatedData.Magnitude = 0.0f;
+				return false;
+			}
+		}
+	}
+
+	return true;
+}
 
 void UABCharacterAttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCallbackData& Data)
 {
