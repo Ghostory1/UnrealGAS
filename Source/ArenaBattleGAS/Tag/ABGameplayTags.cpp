@@ -15,4 +15,6 @@ namespace ABGameplayTags
 	UE_DEFINE_GAMEPLAY_TAG(Actor_State_IsJumping, "Actor.State.IsJumping");
 
 	UE_DEFINE_GAMEPLAY_TAG(Data_Damage, "Data.Damage");
+
+	UE_DEFINE_GAMEPLAY_TAG(GameplayCue_Character_AttackHit, "GameplayCue.Character.AttackHit");
 }

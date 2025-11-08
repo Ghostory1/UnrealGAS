@@ -34,12 +34,12 @@ void UABGA_AttackHitCheck::OnTraceResultCallback(const FGameplayAbilityTargetDat
 		ABGAS_LOG(LogABGAS, Log, TEXT("Target %s Detected"),*(HitResult.GetActor()->GetName()));
 
 		UAbilitySystemComponent* SourceASC = GetAbilitySystemComponentFromActorInfo_Checked();
-		//UAbilitySystemComponent* TargetASC = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(HitResult.GetActor());
-		//if (!SourceASC || !TargetASC)
-		//{
-		//	ABGAS_LOG(LogABGAS, Error, TEXT("SourceASC , TargetASC Not Founded !!"));
-		//	return;
-		//}
+		UAbilitySystemComponent* TargetASC = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(HitResult.GetActor());
+		if (!SourceASC || !TargetASC)
+		{
+			ABGAS_LOG(LogABGAS, Error, TEXT("SourceASC , TargetASC Not Founded !!"));
+			return;
+		}
 		////SourceAttribute 에서 값을 읽고
 		////TargetAttribute의 값을 변경해야하니 const를 제거 해줘야함 -> const_cast
 		////하지만 좋은 방법은 아님 const_cast 보다는 다음에 게임플레이 이펙트를 통해 바꿔주는것이 좋음
@@ -60,6 +60,13 @@ void UABGA_AttackHitCheck::OnTraceResultCallback(const FGameplayAbilityTargetDat
 			//Set-by-Caller 방식
 			//EffectSpecHandle.Data->SetSetByCallerMagnitude(ABGameplayTags::Data_Damage, -(SourceAttribute->GetAttackRate()));
 			ApplyGameplayEffectSpecToTarget(CurrentSpecHandle,CurrentActorInfo,CurrentActivationInfo,EffectSpecHandle,TargetDataHandle);
+
+			FGameplayEffectContextHandle CueContextHandle = UAbilitySystemBlueprintLibrary::GetEffectContext(EffectSpecHandle);
+			CueContextHandle.AddHitResult(HitResult);
+			FGameplayCueParameters CueParam;
+			CueParam.EffectContext = CueContextHandle;
+
+			TargetASC->ExecuteGameplayCue(ABGameplayTags::GameplayCue_Character_AttackHit, CueParam);
 		}
 
 		FGameplayEffectSpecHandle BuffEffectSpecHandle = MakeOutgoingGameplayEffectSpec(AttackBuffEffect);
