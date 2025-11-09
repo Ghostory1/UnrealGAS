@@ -8,7 +8,7 @@
 #include "UI/ABGASWidgetComponent.h"
 #include "UI/ABGASUserWidget.h"
 #include "Attribute/ABCharacterAttributeSet.h"
-
+#include "Tag/ABGameplayTags.h"
 AABGASCharacterPlayer::AABGASCharacterPlayer()
 {
 	ASC = nullptr;
@@ -29,7 +29,13 @@ AABGASCharacterPlayer::AABGASCharacterPlayer()
 		HpBar->SetDrawSize(FVector2D(200.0f, 20.f));
 		HpBar->SetCollisionEnabled(ECollisionEnabled::NoCollision);	
 	}
-
+	static ConstructorHelpers::FObjectFinder<USkeletalMesh> WeaponMeshRef(TEXT("/Script/Engine.SkeletalMesh'/Game/InfinityBladeWeapons/Weapons/Blunt/Blunt_Hellhammer/SK_Blunt_HellHammer.SK_Blunt_HellHammer'"));
+	if (WeaponMeshRef.Object)
+	{
+		WeaponMesh = WeaponMeshRef.Object;
+	}
+	WeaponRange = 75.f;
+	WeaponAttackRate = 100.0f;
 }
 
 UAbilitySystemComponent* AABGASCharacterPlayer::GetAbilitySystemComponent() const
@@ -45,6 +51,11 @@ void AABGASCharacterPlayer::PossessedBy(AController* NewController)
 	{
 		ASC = GASPS->GetAbilitySystemComponent();
 		ASC->InitAbilityActorInfo(GASPS, this);
+
+		//없으면 찾아보고 있으면 가져다 씀
+		// ABGASWeaponBox 이벤트 등록
+		ASC->GenericGameplayEventCallbacks.FindOrAdd(ABGameplayTags::Event_Character_Weapon_Equip).AddUObject(this,&AABGASCharacterPlayer::EquipWeapon);
+		ASC->GenericGameplayEventCallbacks.FindOrAdd(ABGameplayTags::Event_Character_Weapon_Unequip).AddUObject(this,&AABGASCharacterPlayer::UnequipWeapon);
 
 		const UABCharacterAttributeSet* CurrentAttributeSet =  ASC->GetSet<UABCharacterAttributeSet>();
 		if (CurrentAttributeSet)
@@ -123,4 +134,34 @@ void AABGASCharacterPlayer::GASInputReleased(int32 InputId)
 void AABGASCharacterPlayer::OnOutOfHealth()
 {
 	SetDead();
+}
+
+void AABGASCharacterPlayer::EquipWeapon(const FGameplayEventData* EventData)
+{
+	if (Weapon)
+	{
+		Weapon->SetSkeletalMesh(WeaponMesh);
+
+		// Attribute에 직접 접근해서 수정하는 방법은 권장하지않지만 이렇게 간단히 수정할수도 있다
+		const float CurrentAttackRange = ASC->GetNumericAttributeBase(UABCharacterAttributeSet::GetAttackRangeAttribute());
+		const float CurrentAttackRate = ASC->GetNumericAttributeBase(UABCharacterAttributeSet::GetAttackRateAttribute());
+
+		ASC->SetNumericAttributeBase(UABCharacterAttributeSet::GetAttackRangeAttribute(), CurrentAttackRange + WeaponRange);
+		ASC->SetNumericAttributeBase(UABCharacterAttributeSet::GetAttackRateAttribute(), CurrentAttackRate + WeaponAttackRate);
+	}
+}
+
+void AABGASCharacterPlayer::UnequipWeapon(const FGameplayEventData* EventData)
+{
+	if (Weapon)
+	{
+		Weapon->SetSkeletalMesh(nullptr);
+
+		// Attribute에 직접 접근해서 수정하는 방법은 권장하지않지만 이렇게 간단히 수정할수도 있다
+		const float CurrentAttackRange = ASC->GetNumericAttributeBase(UABCharacterAttributeSet::GetAttackRangeAttribute());
+		const float CurrentAttackRate = ASC->GetNumericAttributeBase(UABCharacterAttributeSet::GetAttackRateAttribute());
+
+		ASC->SetNumericAttributeBase(UABCharacterAttributeSet::GetAttackRangeAttribute(), CurrentAttackRange - WeaponRange);
+		ASC->SetNumericAttributeBase(UABCharacterAttributeSet::GetAttackRateAttribute(), CurrentAttackRate - WeaponAttackRate);
+	}
 }

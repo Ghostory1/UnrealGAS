@@ -21,4 +21,11 @@ namespace ABGameplayTags
 
 	// GameplayCue
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(GameplayCue_Character_AttackHit);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(GameplayCue_Chest_Open);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(GameplayCue_Character_Damage);
+
+	//Event
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Event_Character_Weapon_Equip);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Event_Character_Weapon_Unequip);
+
 }

@@ -17,4 +17,9 @@ namespace ABGameplayTags
 	UE_DEFINE_GAMEPLAY_TAG(Data_Damage, "Data.Damage");
 
 	UE_DEFINE_GAMEPLAY_TAG(GameplayCue_Character_AttackHit, "GameplayCue.Character.AttackHit");
+	UE_DEFINE_GAMEPLAY_TAG(GameplayCue_Chest_Open, "GameplayCue.Chest.Open");
+	UE_DEFINE_GAMEPLAY_TAG(GameplayCue_Character_Damage, "GameplayCue.Character.Damage");
+
+	UE_DEFINE_GAMEPLAY_TAG(Event_Character_Weapon_Equip, "Event.Character.Weapon.Equip");
+	UE_DEFINE_GAMEPLAY_TAG(Event_Character_Weapon_Unequip, "Event.Character.Weapon.Unequip");
 }
