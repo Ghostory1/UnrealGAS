@@ -9,6 +9,7 @@
 #include "ArenaBattleGAS.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Character/ABComboActionData.h"
+#include "ABGA_Skill.h"
 
 UABGA_Attack::UABGA_Attack()
 {

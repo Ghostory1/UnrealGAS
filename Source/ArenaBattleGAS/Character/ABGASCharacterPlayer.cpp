@@ -36,6 +36,12 @@ AABGASCharacterPlayer::AABGASCharacterPlayer()
 	}
 	WeaponRange = 75.f;
 	WeaponAttackRate = 100.0f;
+
+	static ConstructorHelpers::FObjectFinder<UAnimMontage> SkillActionMontageRef(TEXT("/Script/Engine.AnimMontage'/Game/ArenaBattleGAS/Animation/AM_SkillAttack.AM_SkillAttack'"));
+	if (SkillActionMontageRef.Object)
+	{
+		SkillActionMontage = SkillActionMontageRef.Object;
+	}
 }
 
 UAbilitySystemComponent* AABGASCharacterPlayer::GetAbilitySystemComponent() const
@@ -98,6 +104,7 @@ void AABGASCharacterPlayer::SetupGASInputComponent()
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Triggered, this, &AABGASCharacterPlayer::GASInputPressed,0);
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &AABGASCharacterPlayer::GASInputReleased,0);
 		EnhancedInputComponent->BindAction(AttackAction, ETriggerEvent::Triggered, this, &AABGASCharacterPlayer::GASInputPressed,1);
+		EnhancedInputComponent->BindAction(SkillAction, ETriggerEvent::Triggered, this, &AABGASCharacterPlayer::GASInputPressed,2);
 	}
 }
 
@@ -142,6 +149,14 @@ void AABGASCharacterPlayer::EquipWeapon(const FGameplayEventData* EventData)
 	{
 		Weapon->SetSkeletalMesh(WeaponMesh);
 
+		FGameplayAbilitySpec NewSkillSpec(SkillAbilityClass);
+		NewSkillSpec.InputID = 2;
+		if (!ASC->FindAbilitySpecFromClass(SkillAbilityClass))
+		{
+			ASC->GiveAbility(NewSkillSpec);
+		}
+
+
 		// Attribute에 직접 접근해서 수정하는 방법은 권장하지않지만 이렇게 간단히 수정할수도 있다
 		const float CurrentAttackRange = ASC->GetNumericAttributeBase(UABCharacterAttributeSet::GetAttackRangeAttribute());
 		const float CurrentAttackRate = ASC->GetNumericAttributeBase(UABCharacterAttributeSet::GetAttackRateAttribute());
@@ -157,11 +172,19 @@ void AABGASCharacterPlayer::UnequipWeapon(const FGameplayEventData* EventData)
 	{
 		Weapon->SetSkeletalMesh(nullptr);
 
+		
+
 		// Attribute에 직접 접근해서 수정하는 방법은 권장하지않지만 이렇게 간단히 수정할수도 있다
 		const float CurrentAttackRange = ASC->GetNumericAttributeBase(UABCharacterAttributeSet::GetAttackRangeAttribute());
 		const float CurrentAttackRate = ASC->GetNumericAttributeBase(UABCharacterAttributeSet::GetAttackRateAttribute());
 
 		ASC->SetNumericAttributeBase(UABCharacterAttributeSet::GetAttackRangeAttribute(), CurrentAttackRange - WeaponRange);
 		ASC->SetNumericAttributeBase(UABCharacterAttributeSet::GetAttackRateAttribute(), CurrentAttackRate - WeaponAttackRate);
+	
+		FGameplayAbilitySpec* SkillAbilitySpec = ASC->FindAbilitySpecFromClass(SkillAbilityClass);
+		if (SkillAbilitySpec)
+		{
+			ASC->ClearAbility(SkillAbilitySpec->Handle);
+		}
 	}
 }
