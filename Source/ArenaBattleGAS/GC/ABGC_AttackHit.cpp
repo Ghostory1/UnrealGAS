@@ -19,7 +19,19 @@ bool UABGC_AttackHit::OnExecute_Implementation(AActor* MyTarget, const FGameplay
 	const FHitResult* HitResult = Parameters.EffectContext.GetHitResult();
 	if (HitResult)
 	{
+		// 단일 적중
 		UGameplayStatics::SpawnEmitterAtLocation(MyTarget, ParticleSystem, HitResult->ImpactPoint, FRotator::ZeroRotator, true);
+	}
+	else
+	{
+		// 다중 적중
+		for (const auto& TargetActor : Parameters.EffectContext.Get()->GetActors())
+		{
+			if (TargetActor.Get())
+			{
+				UGameplayStatics::SpawnEmitterAtLocation(MyTarget, ParticleSystem, TargetActor->GetActorLocation(), FRotator::ZeroRotator, true);
+			}
+		}
 	}
 	return false;
 }

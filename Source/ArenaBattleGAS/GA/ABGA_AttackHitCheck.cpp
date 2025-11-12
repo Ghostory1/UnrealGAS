@@ -30,6 +30,7 @@ void UABGA_AttackHitCheck::ActivateAbility(const FGameplayAbilitySpecHandle Hand
 
 void UABGA_AttackHitCheck::OnTraceResultCallback(const FGameplayAbilityTargetDataHandle& TargetDataHandle)
 {
+	// TargetDataHasHitResult -> 단일 타겟 트레이스
 	if (UAbilitySystemBlueprintLibrary::TargetDataHasHitResult(TargetDataHandle, 0))
 	{
 		FHitResult HitResult = UAbilitySystemBlueprintLibrary::GetHitResultFromTargetData(TargetDataHandle, 0);
@@ -76,6 +77,27 @@ void UABGA_AttackHitCheck::OnTraceResultCallback(const FGameplayAbilityTargetDat
 		{
 			// 자기 자신에게 버프를 거는거기때문에 마지막인자에 타겟정보는 안넣어도 됌
 			ApplyGameplayEffectSpecToOwner(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, BuffEffectSpecHandle);
+		}
+	}
+	// 멀티 타겟 트레이스
+	else if (UAbilitySystemBlueprintLibrary::TargetDataHasActor(TargetDataHandle,0))
+	{
+		// TargetDataHasActor는 Actors 정보가 있는지 확인하는 함수 -> 여러개의 액터들이 있는지
+		UAbilitySystemComponent* SourceASC = GetAbilitySystemComponentFromActorInfo_Checked();
+
+		FGameplayEffectSpecHandle EffectSpecHandle = MakeOutgoingGameplayEffectSpec(AttackDamageEffect, CurrentLevel);
+		if (EffectSpecHandle.IsValid())
+		{
+			//Set-by-Caller 방식
+			//EffectSpecHandle.Data->SetSetByCallerMagnitude(ABGameplayTags::Data_Damage, -(SourceAttribute->GetAttackRate()));
+			ApplyGameplayEffectSpecToTarget(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, EffectSpecHandle, TargetDataHandle);
+
+			FGameplayEffectContextHandle CueContextHandle = UAbilitySystemBlueprintLibrary::GetEffectContext(EffectSpecHandle);
+			CueContextHandle.AddActors(TargetDataHandle.Data[0].Get()->GetActors(),false);
+			FGameplayCueParameters CueParam;
+			CueParam.EffectContext = CueContextHandle;
+
+			SourceASC->ExecuteGameplayCue(ABGameplayTags::GameplayCue_Character_AttackHit, CueParam);
 		}
 	}
 	bool bReplicatiedEndAbility = true;
